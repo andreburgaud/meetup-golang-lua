@@ -1,0 +1,7 @@
+*.o
+*.so
+*.dll
+*.a
+a.out
+# Go executables are called golua to keep the repo clean
+golua
