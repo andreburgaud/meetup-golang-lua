@@ -62,9 +62,9 @@ func repl(prompt string, in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	L := C.luaL_newstate()
 	C.luaL_openlibs(L)
+	defer C.lua_close(L)
 
 	for {
-
 		fmt.Print(prompt)
 
 		if !scanner.Scan() {
@@ -89,9 +89,6 @@ func repl(prompt string, in io.Reader, out io.Writer) {
 			continue
 		}
 	}
-
-	C.lua_close(L)
-
 }
 
 func main() {
