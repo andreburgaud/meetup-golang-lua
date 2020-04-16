@@ -61,6 +61,35 @@ Clone the repository containing the code examples:
 $ git clone https://github.com/andreburgaud/meetup-golang-lua
 ```
 
+### Global Build
+
+You can execute all build by executing `make` at the root of the project:
+
+```
+$ make
+```
+
+**Note**: the sub-projects `gco_lua/dofile` and `cgo_lua/repl` will need a copy of the following lua files in their folders in order to compile successfully:
+
+**Lua header files**:
+
+* `lauxlib.h`
+* `lua.h`
+* `luaconf.h`
+* `lualib.h`
+
+**Lua Library file**:
+
+* `liblua.a` (this file is generated when you compile lua. refer to the section **Lua** and **LuaJIT** above to read the deatils about performing the compilation)
+
+You can clean all the subproject by executing `make clean` at the root of the project:
+
+```
+$ make clean
+```
+
+### Sub-Projects
+
 Each folder containing code examples has a Makefile and a README with some description and requirements. Some examples, in particular those depending on CGO https://golang.org/cmd/cgo/, require to have access to the header files of the Lua source code. The header files are already in the repo, but if you experienced any issue it is better to copy the header files (*.h) or static libraries (*.a) corresponding to the version of Lua you installed on your system.
 
 In directories containing a Makefile, you can execute:
