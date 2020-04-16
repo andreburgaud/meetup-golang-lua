@@ -63,7 +63,7 @@ $ git clone https://github.com/andreburgaud/meetup-golang-lua
 
 ### Global Build
 
-You can execute all build by executing `make` at the root of the project:
+You can execute all builds by executing `make` at the root of the project:
 
 ```
 $ make
@@ -90,9 +90,9 @@ $ make clean
 
 ### Sub-Projects
 
-Each folder containing code examples has a Makefile and a README with some description and requirements. Some examples, in particular those depending on CGO https://golang.org/cmd/cgo/, require to have access to the header files of the Lua source code. The header files are already in the repo, but if you experienced any issue it is better to copy the header files (*.h) or static libraries (*.a) corresponding to the version of Lua you installed on your system.
+Each folder containing code examples has a `Makefile` and a `README` with some description and requirements. Some examples, in particular those depending on [CGO](https://golang.org/cmd/cgo/), require to have access to the header files of the Lua source code. The header files are already in the repo, but if you experienced any issue it is better to copy the header files (`*.h`) or static libraries (`*.a`) corresponding to the version of Lua you installed on your system.
 
-In directories containing a Makefile, you can execute:
+In directories containing a `Makefile`, you can execute:
 
 Build:
 
@@ -110,6 +110,12 @@ Distribution (compressed packages), dependecy on upx:
 
 ```
 $ make dist
+```
+
+Clean:
+
+```
+$ make clean
 ```
 
 ## Licenses
