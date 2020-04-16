@@ -2,7 +2,7 @@
 
 Code supporting the Golang Meetup presentation about calling Go from Lua or embedding Lua in Go.
 
-See slides for more details
+The slides are available at https://www.slideshare.net/AndreBurgaud/go-meet-lua/AndreBurgaud/go-meet-lua.
 
 ## Requirements
 
