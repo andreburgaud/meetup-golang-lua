@@ -21,9 +21,39 @@ import (
 	"unsafe"
 )
 
+// lua.h: #define lua_pop(L,n)		lua_settop(L, -(n)-1)
+func luaPop(L *C.lua_State, i C.int) {
+	C.lua_settop(L, -(i)-1)
+}
+
+// lua.h:
+// #define lua_tostring(L,i)	lua_tolstring(L, (i), NULL)
+// LUA_API const char     *(lua_tolstring) (lua_State *L, int idx, size_t *len);
+func luaToString(L *C.lua_State, i int) *C.char {
+	cstr := C.lua_tolstring(L, (C.int(i)), nil)
+	return cstr
+}
+
+// lua.h:
+// LUA_API int   (lua_pcallk) (lua_State *L, int nargs, int nresults, int errfunc,
+//                             lua_KContext ctx, lua_KFunction k);
+// #define lua_pcall(L,n,r,f)	lua_pcallk(L, (n), (r), (f), 0, NULL)
+func luaPCall(L *C.lua_State, n, r, f C.int) int {
+	res := C.lua_pcallk(L, n, r, f, 0, nil)
+	return int(res)
+}
+
+func handleError(L *C.lua_State) {
+	msg := C.lua_tolstring(L, (-1), nil) // Cleanup done by luaPop
+	fmt.Fprintf(os.Stderr, "%s\n", C.GoString(msg))
+	luaPop(L, 1)
+}
+
 func help() {
-	msg := `.exit   Exit the repl
-.help   Print this help
+	msg := `.exit    Exit the repl
+.quit    Exit the repl
+.help    Print this help
+.version Print Lua version
 -----------------------
 Examples:
 >>> print "Hello Lua!"
@@ -39,23 +69,37 @@ Examples:
 	fmt.Println(msg)
 }
 
-func execute(L *C.lua_State, line string) bool {
+// #define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
+// #define LUA_VERSION_NUM		503
+// LUA_API const lua_Number *(lua_version) (lua_State *L);
+func version(L *C.lua_State) {
+	verNum := C.lua_version(L)
+	C.lua_getglobal(L, C.CString("_VERSION"))
+	version := luaToString(L, -1)
+	fmt.Printf("%s (%.0f)\n", C.GoString(version), C.double(*verNum))
+	luaPop(L, 1)
+}
+
+func execute(L *C.lua_State, line string) {
 	expression := C.CString(strings.TrimSpace(line))
 	defer C.free(unsafe.Pointer(expression))
 
-	C.luaL_loadstring(L, expression)
-
-	if err := C.lua_pcallk(L, 0, 0, 0, 0, nil); err != 0 {
-		C.lua_settop(L, 0) // Clear stack
-		fmt.Println(line)
-		return false
+	if err := C.luaL_loadstring(L, expression); err != 0 {
+		handleError(L)
+		return
 	}
-	result := C.lua_tolstring(L, (-1), nil)
-	defer C.free(unsafe.Pointer(result))
 
-	msg := C.GoString(result)
+	if err := luaPCall(L, 0, 0, 0); err != 0 {
+		fmt.Println(line)
+		handleError(L)
+		return
+	}
+
+	res := luaToString(L, -1)
+
+	msg := C.GoString(res)
 	fmt.Print(msg)
-	return true
+	return
 }
 
 func repl(prompt string, in io.Reader, out io.Writer) {
@@ -81,13 +125,16 @@ func repl(prompt string, in io.Reader, out io.Writer) {
 		case ".help":
 			help()
 			continue
+		case ".version":
+			version(L)
+			continue
 		case ".exit":
+			fallthrough
+		case ".quit":
 			return
 		}
 
-		if !execute(L, line) {
-			continue
-		}
+		execute(L, line)
 	}
 }
 
